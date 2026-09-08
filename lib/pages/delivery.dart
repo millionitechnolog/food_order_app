@@ -1,36 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:food_order_app/bloc/orderbloc.dart';
+import 'package:food_order_app/bloc/orderevent.dart';
+import 'package:food_order_app/bloc/orderstate.dart';
 import 'package:food_order_app/models/deliverymodel.dart';
 import 'package:food_order_app/viewwidget/deliverydetails.dart';
 
-class Delivery extends StatelessWidget {
+class Delivery extends StatefulWidget {
   const Delivery({super.key});
 
   @override
+  State<Delivery> createState() => _DeliveryState();
+}
+
+class _DeliveryState extends State<Delivery> {
+  @override
+  void initState() {
+    super.initState();
+
+    context.read<Orderbloc>().add(GetDeliveredOrdersEvent());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: ListView.separated(
-        padding: EdgeInsets.zero,
-        itemCount: orders.length,
-        separatorBuilder: (context, index) {
-          return const Divider(
-            height: 1,
-            thickness: 1,
-            color: Color(0xFFE8E8E8),
+    return BlocBuilder<Orderbloc, OrderState>(
+      builder: (context, asyncSnapshot) {
+        if (asyncSnapshot.deliveryOrderStatus == OrderStatus.loading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        // Empty list
+        if (asyncSnapshot.deliveryorderList.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 3,
+              children: [
+                Icon(Icons.shopping_cart, color: Colors.grey, size: 100),
+                Text("Order is Empty"),
+              ],
+            ),
           );
-        },
-        itemBuilder: (context, index) {
-          return DeliveryOrderTile(order: orders[index]);
-        },
-      ),
+        }
+
+        return Container(
+          color: Colors.white,
+          child: ListView.separated(
+            padding: EdgeInsets.zero,
+            itemCount: asyncSnapshot.acceptedOrderList.length,
+            separatorBuilder: (context, index) {
+              return const Divider(
+                height: 1,
+                thickness: 1,
+                color: Color(0xFFE8E8E8),
+              );
+            },
+            itemBuilder: (context, index) {
+              return DeliveryOrderTile(
+                isAcceptedOrder: true,
+                order: asyncSnapshot.acceptedOrderList[index],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
 
 class DeliveryOrderTile extends StatelessWidget {
   final DeliveredOrderModel order;
+  final bool isAcceptedOrder;
 
-  const DeliveryOrderTile({super.key, required this.order});
+  const DeliveryOrderTile({
+    super.key,
+    required this.order,
+    this.isAcceptedOrder = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +87,16 @@ class DeliveryOrderTile extends StatelessWidget {
     const Color grey = Color(0xFF8A8A8A);
 
     return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OrderDetailPage(model: order),
-          ),
-        );
-      },
+      onTap: isAcceptedOrder
+          ? null
+          : () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OrderDetailPage(model: order),
+                ),
+              );
+            },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),

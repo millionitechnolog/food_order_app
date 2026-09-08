@@ -26,6 +26,47 @@ class DeliveredOrderModel {
     required this.tax,
     required this.total,
   });
+  factory DeliveredOrderModel.fromJson(Map<String, dynamic> json) {
+    final List<dynamic> orderDetails = json['orderDetails'] ?? [];
+
+    final Map<String, dynamic> firstItem = orderDetails.isNotEmpty
+        ? Map<String, dynamic>.from(orderDetails.first)
+        : {};
+
+    final List<dynamic> toppings = firstItem['toppings'] ?? [];
+
+    return DeliveredOrderModel(
+      orderNo: json['orderNumber']?.toString() ?? '',
+
+      customerName: json['customerName']?.toString() ?? '',
+
+      phoneNumber:
+          json['customerNumber']?.toString() ??
+          json['phoneNumber']?.toString() ??
+          '',
+
+      itemName: firstItem['productName']?.toString() ?? '',
+
+      quantity: int.tryParse(firstItem['quantity']?.toString() ?? '0') ?? 0,
+
+      extras: toppings
+          .map((e) => e['productName']?.toString() ?? '')
+          .where((name) => name.isNotEmpty)
+          .toList(),
+
+      spiceLevel: firstItem['spiceName']?.toString() ?? '',
+
+      itemTotal:
+          double.tryParse(json['orderSubtotal']?.toString() ?? '0') ?? 0.0,
+
+      discount:
+          double.tryParse(json['orderDiscount']?.toString() ?? '0') ?? 0.0,
+
+      tax: double.tryParse(json['orderTax']?.toString() ?? '0') ?? 0.0,
+
+      total: double.tryParse(json['orderTotal']?.toString() ?? '0') ?? 0.0,
+    );
+  }
 }
 
 final List<DeliveredOrderModel> orders = [
