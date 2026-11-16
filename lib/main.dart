@@ -10,12 +10,59 @@ import 'package:food_order_app/services/dioclient.dart';
 import 'package:food_order_app/services/services.dart';
 import 'package:food_order_app/splashpage.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+// final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+// void main() {
+//   DioClient.initialize(
+//     onTokenExpired: () {
+//       navigatorKey.currentState?.pushNamedAndRemoveUntil(
+//         '/login',
+//         (route) => false,
+//       );
+//     },
+//   );
+//   runApp(MyApp());
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MultiBlocProvider(
+//       providers: [
+//         BlocProvider(create: (context) => Orderbloc()),
+//         BlocProvider(
+//           create: (context) => LoginBloc(
+//             authService: AuthService(
+//               dio: Dio(),
+//               storage: const FlutterSecureStorage(),
+//             ),
+//           ),
+//         ),
+//       ],
+//       child: MaterialApp(
+//         debugShowCheckedModeBanner: false,
+
+//         // home: const RotiLoginPage(),
+//         navigatorKey: navigatorKey,
+
+//         initialRoute: '/',
+//         routes: {
+//           '/': (context) => const SplashPage(),
+//           '/login': (context) => const RotiLoginPage(),
+//           '/home': (context) => const OrderHomePage(),
+//         },
+//       ),
+//     );
+//   }
+// }
+final GlobalKey<NavigatorState> navigatorkey = GlobalKey<NavigatorState>();
+
 void main() {
   DioClient.initialize(
     onTokenExpired: () {
-      navigatorKey.currentState?.pushNamedAndRemoveUntil(
-        '/login',
+      navigatorkey.currentState?.pushNamedAndRemoveUntil(
+        "/login",
         (route) => false,
       );
     },
@@ -30,27 +77,24 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => Orderbloc()),
         BlocProvider(
           create: (context) => LoginBloc(
             authService: AuthService(
-              dio: Dio(),
-              storage: const FlutterSecureStorage(),
+              dio: DioClient.dio,
+              storage: DioClient.storage,
             ),
           ),
         ),
+        BlocProvider(create: (context) => Orderbloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-
-        // home: const RotiLoginPage(),
-        navigatorKey: navigatorKey,
-
+        navigatorKey: navigatorkey,
         initialRoute: '/',
         routes: {
-          '/': (context) => const SplashPage(),
-          '/login': (context) => const RotiLoginPage(),
-          '/home': (context) => const OrderHomePage(),
+          "/": (context) => SplashPage(),
+          "/login": (context) => RotiLoginPage(),
+          "/home": (context) => OrderHomePage(),
         },
       ),
     );

@@ -13,12 +13,22 @@ class Delivery extends StatefulWidget {
   State<Delivery> createState() => _DeliveryState();
 }
 
-class _DeliveryState extends State<Delivery> {
-  @override
-  void initState() {
-    super.initState();
+ class _DeliveryState extends State<Delivery> {
+//   @override
+//   void initState() {
+//     super.initState();
 
-    context.read<Orderbloc>().add(GetDeliveredOrdersEvent());
+//     context.read<Orderbloc>().add(GetDeliveredOrdersEvent());
+//   }
+
+  Future<void> _refreshOrders() async {
+    final bloc = context.read<Orderbloc>();
+
+    bloc.add(GetDeliveredOrdersEvent());
+
+    await bloc.stream.firstWhere(
+      (state) => state.deliveryOrderStatus != OrderStatus.loading,
+    );
   }
 
   @override
@@ -45,24 +55,27 @@ class _DeliveryState extends State<Delivery> {
           );
         }
 
-        return Container(
-          color: Colors.white,
-          child: ListView.separated(
-            padding: EdgeInsets.zero,
-            itemCount: asyncSnapshot.acceptedOrderList.length,
-            separatorBuilder: (context, index) {
-              return const Divider(
-                height: 1,
-                thickness: 1,
-                color: Color(0xFFE8E8E8),
-              );
-            },
-            itemBuilder: (context, index) {
-              return DeliveryOrderTile(
-                isAcceptedOrder: true,
-                order: asyncSnapshot.acceptedOrderList[index],
-              );
-            },
+        return RefreshIndicator(
+          onRefresh: _refreshOrders,
+          child: Container(
+            color: Colors.white,
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: asyncSnapshot.deliveryorderList.length,
+              separatorBuilder: (context, index) {
+                return const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xFFE8E8E8),
+                );
+              },
+              itemBuilder: (context, index) {
+                return DeliveryOrderTile(
+                  order: asyncSnapshot.deliveryorderList[index],
+                );
+              },
+            ),
           ),
         );
       },
@@ -72,12 +85,12 @@ class _DeliveryState extends State<Delivery> {
 
 class DeliveryOrderTile extends StatelessWidget {
   final DeliveredOrderModel order;
-  final bool isAcceptedOrder;
+  // final bool isAcceptedOrder;
 
   const DeliveryOrderTile({
     super.key,
     required this.order,
-    this.isAcceptedOrder = false,
+    //this.isAcceptedOrder = false,
   });
 
   @override
@@ -87,16 +100,18 @@ class DeliveryOrderTile extends StatelessWidget {
     const Color grey = Color(0xFF8A8A8A);
 
     return InkWell(
-      onTap: isAcceptedOrder
-          ? null
-          : () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => OrderDetailPage(model: order),
-                ),
-              );
-            },
+      onTap: () {
+        context.read<Orderbloc>().add(GetOrderInfoEvent(guid: order.guid));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OrderDetailPage(
+              guid: order.guid,
+              phoneNumber: order.phoneNumber,
+            ),
+          ),
+        );
+      },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),

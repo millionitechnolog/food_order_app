@@ -16,9 +16,13 @@ class OrderState {
   final List<DeliveredOrderModel> acceptedOrderList;
   final List<DeliveredOrderModel> deliveryorderList;
   final List<DeliveredOrderModel> rejectedOrderList;
-  final DeliveredOrderModel? orderInfo;
+  final OrderInfoModel? orderInfo;
   final List<GeneralSettingsModel> generalSettings;
   final List<MenuItemStatusModel> menuItemStatusList;
+  final OrderInfoModel? selectedOrder;
+  final OrderStatus orderInfoStatus;
+  final OrderStatus updateOrderStatus;
+  final String updateOrderMessage;
 
   final String errorMessage;
 
@@ -38,6 +42,10 @@ class OrderState {
     this.orderInfo,
     this.generalSettings = const [],
     this.menuItemStatusList = const [],
+    this.selectedOrder,
+    this.orderInfoStatus = OrderStatus.initial,
+    this.updateOrderStatus = OrderStatus.initial,
+    this.updateOrderMessage = '',
   });
 
   OrderState copyWith({
@@ -53,9 +61,13 @@ class OrderState {
     List<DeliveredOrderModel>? deliveryorderList,
     List<DeliveredOrderModel>? rejectedOrderList,
     String? errorMessage,
-    DeliveredOrderModel? orderInfo,
+    OrderInfoModel? orderInfo,
     List<GeneralSettingsModel>? generalSettings,
     List<MenuItemStatusModel>? menuItemStatusList,
+    OrderInfoModel? selectedOrder,
+    OrderStatus? orderInfoStatus,
+    OrderStatus? updateOrderStatus,
+    String? updateOrderMessage,
   }) {
     return OrderState(
       status: status ?? this.status,
@@ -76,6 +88,11 @@ class OrderState {
       orderInfo: orderInfo ?? this.orderInfo,
       generalSettings: generalSettings ?? this.generalSettings,
       menuItemStatusList: menuItemStatusList ?? this.menuItemStatusList,
+      selectedOrder: selectedOrder ?? this.selectedOrder,
+      orderInfoStatus: orderInfoStatus ?? this.orderInfoStatus,
+      updateOrderStatus: updateOrderStatus ?? this.updateOrderStatus,
+
+      updateOrderMessage: updateOrderMessage ?? this.updateOrderMessage,
     );
   }
 }

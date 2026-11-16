@@ -1,439 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:food_order_app/models/deliverymodel.dart';
-// import 'package:food_order_app/services/appconfic.dart';
-// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-// import 'package:dio/dio.dart';
-
-// class AuthService {
-//   final Dio dio;
-//   final FlutterSecureStorage storage;
-
-//   AuthService({required this.dio, required this.storage});
-
-//   Future<bool> login({
-//     required String userName,
-//     required String password,
-//   }) async {
-//     try {
-//       final response = await dio.post(
-//         '${AppConfig.apiUrl}auth/token',
-//         data: {'userName': userName, 'password': password},
-//       );
-
-//       if (response.statusCode == 200) {
-//         final accessToken = response.data['accessToken'];
-
-//         await storage.write(key: 'AccessToken', value: accessToken);
-
-//         return true;
-//       }
-
-//       return false;
-//     } on DioException catch (e) {
-//       debugPrint("STATUS CODE: ${e.response?.statusCode}");
-//       debugPrint("ERROR RESPONSE: ${e.response?.data}");
-//       debugPrint("ERROR MESSAGE: ${e.message}");
-//       debugPrint("REQUEST URL: ${e.requestOptions.uri}");
-//       debugPrint("REQUEST DATA: ${e.requestOptions.data}");
-
-//       if (e.response?.statusCode == 401) {
-//         throw Exception('Invalid credentials');
-//       }
-
-//       throw Exception(
-//         e.response?.data?.toString() ?? e.message ?? 'Login request failed',
-//       );
-//     }
-//   }
-
-//   // Future<bool> isLoggedIn() async {
-//   //   final token = await storage.read(key: 'AccessToken');
-
-//   //   return token != null && token.isNotEmpty;
-//   // }
-
-//   Future<void> logout() async {
-//     try {
-//       await storage.delete(key: 'AccessToken');
-//       await storage.delete(key: 'PrinterName');
-
-//       debugPrint('Logout successful');
-//     } catch (e) {
-//       debugPrint('Logout error: $e');
-//       throw Exception('Logout failed');
-//     }
-//   }
-
-//   Future<List<DeliveredOrderModel>> getAcceptedOrders() async {
-//     try {
-//       final token = await storage.read(key: 'AccessToken');
-
-//       debugPrint('ACCESS TOKEN: $token');
-
-//       if (token == null || token.isEmpty) {
-//         throw Exception('Token not found');
-//       }
-
-//       final response = await dio.get(
-//         '${AppConfig.apiUrl}orders/accept',
-//         options: Options(
-//           headers: {
-//             'Authorization': 'Bearer $token',
-//             'Content-Type': 'application/json',
-//           },
-//         ),
-//       );
-
-//       debugPrint('ACCEPT ORDER STATUS: ${response.statusCode}');
-
-//       debugPrint('ACCEPT ORDER DATA: ${response.data}');
-
-//       if (response.statusCode == 200) {
-//         if (response.data is List) {
-//           return response.data;
-//         }
-
-//         return [];
-//       }
-
-//       return [];
-//     } on DioException catch (e) {
-//       debugPrint('ACCEPT ORDER ERROR STATUS: ${e.response?.statusCode}');
-
-//       debugPrint('ACCEPT ORDER ERROR DATA: ${e.response?.data}');
-
-//       if (e.response?.statusCode == 401) {
-//         throw Exception('Unauthorized');
-//       }
-
-//       throw Exception(
-//         e.response?.data?.toString() ?? e.message ?? 'Something went wrong',
-//       );
-//     }
-//   }
-
-//   Future<List<DeliveredOrderModel>> getRejectedOrders() async {
-//     try {
-//       final token = await storage.read(key: 'AccessToken');
-
-//       if (token!.isEmpty) {
-//         throw Exception('Token not found');
-//       }
-
-//       final response = await dio.get(
-//         '${AppConfig.apiUrl}orders/reject',
-//         options: Options(
-//           headers: {
-//             'Authorization': 'Bearer $token',
-//             'Content-Type': 'application/json',
-//           },
-//         ),
-//       );
-
-//       debugPrint('REJECT ORDER STATUS: ${response.statusCode}');
-
-//       debugPrint('REJECT ORDER DATA: ${response.data}');
-
-//       if (response.statusCode == 200) {
-//         if (response.data is List) {
-//           return response.data;
-//         }
-
-//         return [];
-//       }
-
-//       return [];
-//     } on DioException catch (e) {
-//       debugPrint('REJECT ORDER ERROR STATUS: ${e.response?.statusCode}');
-
-//       debugPrint('REJECT ORDER ERROR DATA: ${e.response?.data}');
-
-//       if (e.response?.statusCode == 401) {
-//         throw Exception('Unauthorized');
-//       }
-
-//       throw Exception(
-//         e.response?.data?.toString() ?? e.message ?? 'Something went wrong',
-//       );
-//     }
-//   }
-//   //Future<List<dynamic>> getDeliveredOrders() async {
-//   //   try {
-//   //    final token = await storage.read(
-//   //         key: 'AccessToken',
-//   //       );
-
-//   //     if (token!.isEmpty) {
-//   //       throw Exception('Token not found');
-//   //     }
-
-//   //     final response = await dio.get(
-//   //       '${AppConfig.apiUrl}orders/deliver',
-//   //       options: Options(
-//   //         headers: {
-//   //           'Authorization': 'Bearer $token',
-//   //           'Content-Type': 'application/json',
-//   //         },
-//   //       ),
-//   //     );
-
-//   //     debugPrint(
-//   //       'DELIVER ORDER STATUS: ${response.statusCode}',
-//   //     );
-
-//   //     debugPrint(
-//   //       'DELIVER ORDER DATA: ${response.data}',
-//   //     );
-
-//   //     if (response.statusCode == 200) {
-//   //       if (response.data is List) {
-//   //         return response.data;
-//   //       }
-
-//   //       return [];
-//   //     }
-
-//   //     return [];
-//   //   } on DioException catch (e) {
-//   //     debugPrint(
-//   //       'DELIVER ORDER ERROR STATUS: ${e.response?.statusCode}',
-//   //     );
-
-//   //     debugPrint(
-//   //       'DELIVER ORDER ERROR DATA: ${e.response?.data}',
-//   //     );
-
-//   //     if (e.response?.statusCode == 401) {
-//   //       throw Exception('Unauthorized');
-//   //     }
-
-//   //     throw Exception(
-//   //       e.response?.data?.toString() ??
-//   //           e.message ??
-//   //           'Something went wrong',
-//   //     );
-//   //   }
-//   // }
-//   Future<Map<String, dynamic>?> getOrderInfo(String guid) async {
-//     try {
-//       final token = await storage.read(key: 'AccessToken');
-
-//       if (token == null || token.isEmpty) {
-//         throw Exception('Access token not found');
-//       }
-
-//       final response = await dio.get(
-//         '${AppConfig.apiUrl}orders/$guid',
-//         options: Options(
-//           headers: {
-//             'Authorization': 'Bearer $token',
-//             'Content-Type': 'application/json',
-//           },
-//         ),
-//       );
-
-//       debugPrint('ORDER INFO STATUS: ${response.statusCode}');
-
-//       debugPrint('ORDER INFO DATA: ${response.data}');
-
-//       if (response.statusCode == 200 && response.data != null) {
-//         return Map<String, dynamic>.from(response.data);
-//       }
-
-//       return null;
-//     } on DioException catch (e) {
-//       debugPrint('ORDER INFO ERROR STATUS: ${e.response?.statusCode}');
-
-//       debugPrint('ORDER INFO ERROR DATA: ${e.response?.data}');
-
-//       if (e.response?.statusCode == 401) {
-//         throw Exception('Unauthorized');
-//       }
-
-//       throw Exception(
-//         e.response?.data?.toString() ?? e.message ?? 'Something went wrong',
-//       );
-//     }
-//   }
-
-//   Future<List<DeliveredOrderModel>> getDeliveredOrders() async {
-//     try {
-//       final token = await storage.read(key: 'AccessToken');
-
-//       if (token == null || token.isEmpty) {
-//         throw Exception('Access token not found');
-//       }
-
-//       final response = await dio.get(
-//         '${AppConfig.apiUrl}orders/deliver',
-//         options: Options(
-//           headers: {
-//             'Authorization': 'Bearer $token',
-//             'Content-Type': 'application/json',
-//           },
-//         ),
-//       );
-
-//       debugPrint('DELIVER ORDER STATUS: ${response.statusCode}');
-
-//       debugPrint('DELIVER ORDER DATA: ${response.data}');
-
-//       if (response.statusCode == 200 && response.data is List) {
-//         return (response.data as List)
-//             .map(
-//               (e) => DeliveredOrderModel.fromJson(Map<String, dynamic>.from(e)),
-//             )
-//             .toList();
-//       }
-
-//       return [];
-//     } on DioException catch (e) {
-//       debugPrint('DELIVER ORDER ERROR STATUS: ${e.response?.statusCode}');
-
-//       debugPrint('DELIVER ORDER ERROR DATA: ${e.response?.data}');
-
-//       if (e.response?.statusCode == 401) {
-//         throw Exception('Unauthorized');
-//       }
-
-//       throw Exception(
-//         e.response?.data?.toString() ?? e.message ?? 'Something went wrong',
-//       );
-//     }
-//   }
-
-//   Future<bool> updateSwipeOrderStatus({
-//     required String guid,
-//     required String orderStatus,
-//   }) async {
-//     try {
-//       final token = await storage.read(key: 'AccessToken');
-
-//       if (token == null || token.isEmpty) {
-//         throw Exception('Access token not found');
-//       }
-
-//       final response = await dio.post(
-//         '${AppConfig.apiUrl}orders',
-//         data: {'RowGuid': guid, 'OrderStatus': orderStatus},
-//         options: Options(
-//           headers: {
-//             'Authorization': 'Bearer $token',
-//             'Content-Type': 'application/json',
-//           },
-//         ),
-//       );
-
-//       debugPrint('UPDATE ORDER STATUS CODE: ${response.statusCode}');
-
-//       debugPrint('UPDATE ORDER RESPONSE: ${response.data}');
-
-//       if (response.statusCode == 202) {
-//         return true;
-//       }
-
-//       return false;
-//     } on DioException catch (e) {
-//       debugPrint('UPDATE ORDER ERROR STATUS: ${e.response?.statusCode}');
-
-//       debugPrint('UPDATE ORDER ERROR DATA: ${e.response?.data}');
-
-//       if (e.response?.statusCode == 401) {
-//         throw Exception('Unauthorized');
-//       }
-
-//       throw Exception(
-//         e.response?.data?.toString() ?? e.message ?? 'Something went wrong',
-//       );
-//     }
-//   }
-
-//   Future<bool> updateOrderStatus({
-//     required String guid,
-//     required String orderStatus,
-//   }) async {
-//     try {
-//       final token = await storage.read(key: 'AccessToken');
-
-//       if (token == null || token.isEmpty) {
-//         throw Exception('Access token not found');
-//       }
-
-//       final response = await dio.post(
-//         '${AppConfig.apiUrl}orders',
-//         data: {'RowGuid': guid, 'OrderStatus': orderStatus},
-//         options: Options(
-//           headers: {
-//             'Authorization': 'Bearer $token',
-//             'Content-Type': 'application/json',
-//           },
-//         ),
-//       );
-
-//       debugPrint('UPDATE ORDER STATUS CODE: ${response.statusCode}');
-
-//       debugPrint('UPDATE ORDER RESPONSE: ${response.data}');
-
-//       return response.statusCode == 202;
-//     } on DioException catch (e) {
-//       debugPrint('UPDATE ORDER ERROR STATUS: ${e.response?.statusCode}');
-
-//       debugPrint('UPDATE ORDER ERROR DATA: ${e.response?.data}');
-
-//       if (e.response?.statusCode == 401) {
-//         throw Exception('Unauthorized');
-//       }
-
-//       throw Exception(
-//         e.response?.data?.toString() ?? e.message ?? 'Something went wrong',
-//       );
-//     }
-//   }
-
-//   Future<Map<String, dynamic>?> getAcceptOrderInfo({
-//     required String guid,
-//   }) async {
-//     try {
-//       final token = await storage.read(key: 'AccessToken');
-
-//       if (token == null || token.isEmpty) {
-//         throw Exception('Access token not found');
-//       }
-
-//       final response = await dio.get(
-//         '${AppConfig.apiUrl}orders/$guid',
-//         options: Options(
-//           headers: {
-//             'Authorization': 'Bearer $token',
-//             'Content-Type': 'application/json',
-//           },
-//         ),
-//       );
-
-//       debugPrint('ACCEPT ORDER INFO STATUS: ${response.statusCode}');
-
-//       debugPrint('ACCEPT ORDER INFO DATA: ${response.data}');
-
-//       if (response.statusCode == 200 && response.data != null) {
-//         return Map<String, dynamic>.from(response.data);
-//       }
-
-//       return null;
-//     } on DioException catch (e) {
-//       debugPrint('ACCEPT ORDER INFO ERROR STATUS: ${e.response?.statusCode}');
-
-//       debugPrint('ACCEPT ORDER INFO ERROR DATA: ${e.response?.data}');
-
-//       if (e.response?.statusCode == 401) {
-//         throw Exception('Unauthorized');
-//       }
-
-//       throw Exception(
-//         e.response?.data?.toString() ?? e.message ?? 'Something went wrong',
-//       );
-//     }
-//   }
-// }
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -491,7 +55,7 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final accessToken = response.data['accessToken']?.toString();
-
+        print("accesstoken $accessToken");
         if (accessToken == null || accessToken.isEmpty) {
           throw Exception('Access token not found in response');
         }
@@ -524,7 +88,11 @@ class AuthService {
         '${AppConfig.apiUrl}orders/accept',
         options: await _authOptions(),
       );
+      final token = await storage.read(key: 'AccessToken');
 
+      print('===== STORED TOKEN =====');
+      print(token);
+      print('========================');
       debugPrint('ACCEPT STATUS: ${response.statusCode}');
       debugPrint('ACCEPT DATA: ${response.data}');
 
@@ -564,11 +132,6 @@ class AuthService {
     }
   }
 
-  // =========================================================
-  // DELIVERED ORDERS
-  // GET orders/deliver
-  // =========================================================
-
   Future<List<DeliveredOrderModel>> getDeliveredOrders() async {
     try {
       final response = await dio.get(
@@ -588,12 +151,69 @@ class AuthService {
     }
   }
 
+  Future<List<DeliveredOrderModel>> getNewOrders() async {
+    print('🔥🔥🔥 GET NEW ORDERS FUNCTION CALLED 🔥🔥🔥');
+
+    try {
+      final url = '${AppConfig.apiUrl}orders/new';
+
+      print('NEW ORDER URL = $url');
+
+      final response = await dio.get(url, options: await _authOptions());
+
+      print('NEW ORDER STATUS = ${response.statusCode}');
+      print('NEW ORDER RESPONSE = ${response.data}');
+
+      if (response.statusCode == 200 && response.data is List) {
+        final orders = (response.data as List)
+            .map(
+              (e) => DeliveredOrderModel.fromJson(Map<String, dynamic>.from(e)),
+            )
+            .toList();
+
+        print('NEW ORDER COUNT = ${orders.length}');
+
+        return orders;
+      }
+
+      return [];
+    } on DioException catch (e) {
+      print('❌ NEW ORDER DIO ERROR');
+      print('STATUS = ${e.response?.statusCode}');
+      print('DATA = ${e.response?.data}');
+      print('MESSAGE = ${e.message}');
+      print('URL = ${e.requestOptions.uri}');
+
+      rethrow;
+    } catch (e) {
+      print('❌ NEW ORDER OTHER ERROR = $e');
+      rethrow;
+    }
+  }
+  // Future<List<DeliveredOrderModel>> getNewOrders() async {
+  //   try {
+  //     final response = await dio.get(
+  //       '${AppConfig.apiUrl}orders/order',
+  //       options: await _authOptions(),
+  //     );
+
+  //     if (response.statusCode == 200 && response.data is List) {
+  //       return List<DeliveredOrderModel>.from(
+  //         response.data.map((e) => DeliveredOrderModel.fromJson(e)),
+  //       );
+  //     }
+
+  //     return [];
+  //   } on DioException catch (e) {
+  //     _handleDioError(e);
+  //   }
+  // }
   // =========================================================
   // ORDER DETAILS
   // GET orders/{guid}
   // =========================================================
 
-  Future<DeliveredOrderModel?> getOrderInfo(String guid) async {
+  Future<OrderInfoModel?> getOrderInfo(String guid) async {
     try {
       final response = await dio.get(
         '${AppConfig.apiUrl}orders/$guid',
@@ -604,7 +224,7 @@ class AuthService {
       debugPrint('ORDER INFO DATA: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
-        return DeliveredOrderModel.fromJson(response.data);
+        return OrderInfoModel.fromJson(response.data);
       }
 
       return null;
@@ -642,7 +262,7 @@ class AuthService {
   // GET orders/report?sDate=
   // =========================================================
 
-  Future<List<DeliveredOrderModel>> getOrderReport(String date) async {
+  Future<List<OrderDetailModel>> getOrderReport(String date) async {
     try {
       final response = await dio.get(
         '${AppConfig.apiUrl}orders/report',
@@ -651,8 +271,8 @@ class AuthService {
       );
 
       if (response.statusCode == 200 && response.data is List) {
-        return List<DeliveredOrderModel>.from(
-          response.data.map((e) => DeliveredOrderModel.fromJson(e)),
+        return List<OrderDetailModel>.from(
+          response.data.map((e) => OrderDetailModel.fromJson(e)),
         );
       }
 

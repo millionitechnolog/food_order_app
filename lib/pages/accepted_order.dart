@@ -14,10 +14,15 @@ class AcceptedOreder extends StatefulWidget {
 
 class _AcceptedOrederState extends State<AcceptedOreder> {
   @override
-  void initState() {
-    super.initState();
-
+  // void initState() {
+  //   super.initState();
+  //   debugPrint('ACCEPTED PAGE INIT CALLED');
+  //   context.read<Orderbloc>().add(GetAcceptedOrdersEvent());
+  // }
+  Future<void> _refreshAcceptedOrders() async {
     context.read<Orderbloc>().add(GetAcceptedOrdersEvent());
+
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   @override
@@ -44,24 +49,27 @@ class _AcceptedOrederState extends State<AcceptedOreder> {
               ),
             );
           }
-
-          return Container(
-            color: Colors.white,
-            child: ListView.separated(
-              padding: EdgeInsets.zero,
-              itemCount: asyncSnapshot.acceptedOrderList.length,
-              separatorBuilder: (context, index) {
-                return const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: Color(0xFFE8E8E8),
-                );
-              },
-              itemBuilder: (context, index) {
-                return DeliveryOrderTile(
-                  order: asyncSnapshot.acceptedOrderList[index],
-                );
-              },
+          print(asyncSnapshot.acceptedOrderList.length);
+          return RefreshIndicator(
+            onRefresh: _refreshAcceptedOrders,
+            child: Container(
+              color: Colors.white,
+              child: ListView.separated(
+                padding: EdgeInsets.zero,
+                itemCount: asyncSnapshot.acceptedOrderList.length,
+                separatorBuilder: (context, index) {
+                  return const Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Color(0xFFE8E8E8),
+                  );
+                },
+                itemBuilder: (context, index) {
+                  return DeliveryOrderTile(
+                    order: asyncSnapshot.acceptedOrderList[index],
+                  );
+                },
+              ),
             ),
           );
         },

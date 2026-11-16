@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_order_app/bloc/orderbloc.dart';
+import 'package:food_order_app/bloc/orderevent.dart';
 import 'package:food_order_app/bloc/orderstate.dart';
 import 'package:food_order_app/pages/delivery.dart';
 
@@ -37,24 +38,30 @@ class _RejectedState extends State<Rejected> {
             );
           }
 
-          return Container(
-            color: Colors.white,
-            child: ListView.separated(
-              padding: EdgeInsets.zero,
-              itemCount: asyncSnapshot.acceptedOrderList.length,
-              separatorBuilder: (context, index) {
-                return const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: Color(0xFFE8E8E8),
-                );
-              },
-              itemBuilder: (context, index) {
-                return DeliveryOrderTile(
-                  order: asyncSnapshot.rejectedOrderList[index],
-                  isAcceptedOrder: true,
-                );
-              },
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<Orderbloc>().add(GetRejectedOrdersEvent());
+
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            child: Container(
+              color: Colors.white,
+              child: ListView.separated(
+                padding: EdgeInsets.zero,
+                itemCount: asyncSnapshot.rejectedOrderList.length,
+                separatorBuilder: (context, index) {
+                  return const Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Color(0xFFE8E8E8),
+                  );
+                },
+                itemBuilder: (context, index) {
+                  return DeliveryOrderTile(
+                    order: asyncSnapshot.rejectedOrderList[index],
+                  );
+                },
+              ),
             ),
           );
         },

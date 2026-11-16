@@ -2,11 +2,7 @@ import 'package:food_order_app/models/generalsetting.dart';
 
 class Orderevent {}
 
-class GetNewOrdersEvent extends Orderevent {
-  final String guid;
-
-  GetNewOrdersEvent({required this.guid});
-}
+class GetNewOrdersEvent extends Orderevent {}
 
 class GetDeliveredOrdersEvent extends Orderevent {}
 
@@ -23,3 +19,16 @@ class UpdateGeneralSettingsEvent extends Orderevent {
 }
 
 class GetMenuItemStatusListEvent extends Orderevent {}
+
+class GetOrderInfoEvent extends Orderevent {
+  final String guid;
+
+  GetOrderInfoEvent({required this.guid});
+}
+
+class UpdateOrderStatusEvent extends Orderevent {
+  final String guid;
+  final String orderStatus;
+
+  UpdateOrderStatusEvent({required this.guid, required this.orderStatus});
+}

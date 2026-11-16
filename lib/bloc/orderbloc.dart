@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:food_order_app/bloc/orderstate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:food_order_app/bloc/orderevent.dart";
-import 'package:food_order_app/models/deliverymodel.dart';
+
 import 'package:food_order_app/services/services.dart';
 
 class Orderbloc extends Bloc<Orderevent, OrderState> {
@@ -17,9 +17,9 @@ class Orderbloc extends Bloc<Orderevent, OrderState> {
       emit(state.copyWith(status: OrderStatus.loading, errorMessage: ''));
 
       try {
-        final result = await authService.getOrderInfo(event.guid);
+        final result = await authService.getNewOrders();
 
-        emit(state.copyWith(status: OrderStatus.success, orderInfo: result));
+        emit(state.copyWith(status: OrderStatus.success, newOrderList: result));
       } catch (e) {
         emit(
           state.copyWith(
@@ -51,7 +51,44 @@ class Orderbloc extends Bloc<Orderevent, OrderState> {
       }
       emit(state.copyWith(deliveryOrderStatus: OrderStatus.initial));
     });
+    // on<GetAcceptedOrdersEvent>((event, emit) async {
+    //   emit(
+    //     state.copyWith(
+    //       acceptedOrderStatus: OrderStatus.loading,
+    //       errorMessage: '',
+    //     ),
+    //   );
+
+    //   try {
+    //     final result = await authService.getAcceptedOrders();
+    //     debugPrint('ACCEPTED RESULT COUNT: ${result.length}');
+
+    //     for (final item in result) {
+    //       debugPrint('ORDER => ${item.orderNo} / ${item.customerName}');
+    //     }
+    //     emit(
+    //       state.copyWith(
+    //         acceptedOrderStatus: OrderStatus.success,
+    //         acceptedOrderList: result,
+    //       ),
+    //     );
+    //   } catch (e) {
+    //     emit(
+    //       state.copyWith(
+    //         acceptedOrderStatus: OrderStatus.failure,
+    //         errorMessage: e.toString(),
+    //       ),
+    //     );
+    //   }
+    //   emit(
+    //     state.copyWith(
+    //       acceptedOrderStatus: OrderStatus.initial,
+    //       errorMessage: '',
+    //     ),
+    //   );
+    // });
     on<GetAcceptedOrdersEvent>((event, emit) async {
+      debugPrint('GET ACCEPTED ORDERS EVENT CALLED');
       emit(
         state.copyWith(
           acceptedOrderStatus: OrderStatus.loading,
@@ -62,10 +99,17 @@ class Orderbloc extends Bloc<Orderevent, OrderState> {
       try {
         final result = await authService.getAcceptedOrders();
 
+        debugPrint('ACCEPTED RESULT COUNT: ${result.length}');
+
+        // for (final item in result) {
+        //   debugPrint('ORDER => ${item.} / ${item.customerName}');
+        // }
+
         emit(
           state.copyWith(
             acceptedOrderStatus: OrderStatus.success,
             acceptedOrderList: result,
+            errorMessage: '',
           ),
         );
       } catch (e) {
@@ -76,12 +120,6 @@ class Orderbloc extends Bloc<Orderevent, OrderState> {
           ),
         );
       }
-      emit(
-        state.copyWith(
-          acceptedOrderStatus: OrderStatus.initial,
-          errorMessage: '',
-        ),
-      );
     });
     on<GetRejectedOrdersEvent>((event, emit) async {
       emit(
@@ -205,6 +243,84 @@ class Orderbloc extends Bloc<Orderevent, OrderState> {
         );
       }
       emit(state.copyWith(menuItemStatusListStatus: OrderStatus.initial));
+    });
+    on<GetOrderInfoEvent>((event, emit) async {
+      debugPrint('GET ORDER INFO EVENT CALLED: ${event.guid}');
+
+      emit(
+        state.copyWith(orderInfoStatus: OrderStatus.loading, errorMessage: ''),
+      );
+
+      try {
+        final result = await authService.getOrderInfo(event.guid);
+
+        if (result != null) {
+          emit(
+            state.copyWith(
+              orderInfoStatus: OrderStatus.success,
+              selectedOrder: result,
+              errorMessage: '',
+            ),
+          );
+        } else {
+          emit(
+            state.copyWith(
+              orderInfoStatus: OrderStatus.failure,
+              errorMessage: 'Order details not found',
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('GET ORDER INFO ERROR: $e');
+
+        emit(
+          state.copyWith(
+            orderInfoStatus: OrderStatus.failure,
+            errorMessage: e.toString().replaceFirst('Exception: ', ''),
+          ),
+        );
+      }
+    });
+    on<UpdateOrderStatusEvent>((event, emit) async {
+      emit(
+        state.copyWith(
+          updateOrderStatus: OrderStatus.loading,
+          updateOrderMessage: '',
+        ),
+      );
+
+      try {
+        final bool success = await authService.updateOrderStatus(
+          guid: event.guid,
+          orderStatus: event.orderStatus,
+        );
+
+        if (success) {
+          emit(
+            state.copyWith(
+              updateOrderStatus: OrderStatus.success,
+              updateOrderMessage: 'Order ${event.orderStatus} successfully',
+            ),
+          );
+
+          // Refresh New Orders
+          add(GetNewOrdersEvent());
+        } else {
+          emit(
+            state.copyWith(
+              updateOrderStatus: OrderStatus.failure,
+              updateOrderMessage: 'Failed to update order',
+            ),
+          );
+        }
+      } catch (e) {
+        emit(
+          state.copyWith(
+            updateOrderStatus: OrderStatus.failure,
+            updateOrderMessage: e.toString().replaceFirst('Exception: ', ''),
+          ),
+        );
+      }
     });
   }
 }
